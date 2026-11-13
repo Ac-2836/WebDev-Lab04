@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
   { to: '/people', label: 'People', end: false },
   { to: '/form', label: 'Form', end: false },
+  { to: '/forums', label: 'Forums', end: false },
 ];
 
 export function RootLayout() {

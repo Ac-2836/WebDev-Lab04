@@ -5,6 +5,8 @@ import { PeopleIndex, PeopleLayout } from './people/PeopleLayout.jsx';
 import { PersonSkeleton } from './people/PersonSkeleton.jsx';
 import { PEOPLE } from './people/people-data.js';
 import { SimpleForm } from './form/SimpleForm.jsx';
+import { ForumChannels, ForumIndex } from './forum/ForumChannels.jsx';
+import { ForumMessages } from './forum/ForumMessages.jsx';
 
 // Route-level code split; lazy() needs a default export, so map the named one.
 const PersonDetail = lazy(() =>
@@ -28,6 +30,10 @@ export function App() {
           />
         </Route>
         <Route path='form' element={<SimpleForm />} />
+        <Route path='forums' element={<ForumChannels />}>
+          <Route index element={<ForumIndex />} />
+          <Route path=':forumId' element={<ForumMessages />} />
+        </Route>
       </Route>
     </Routes>
   );
