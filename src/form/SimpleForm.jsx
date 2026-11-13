@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FormContext, useFormContext } from './FormContext.js';
 import { InputField } from './InputField.jsx';
+import { ShowData } from './ShowData.jsx';
 import { validateForm } from './validate-form.js';
 import styles from './SimpleForm.module.css';
 
@@ -21,6 +22,7 @@ export function SimpleForm() {
   const [values, setValues] = useState(INITIAL_VALUES);
   const [touched, setTouched] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [submitted, setSubmitted] = useState(null);
   // Derived in the same render pass as the keystroke: no useEffect waterfall.
   const errors = validateForm(values);
   const isValid = Object.keys(errors).length === 0;
@@ -40,7 +42,12 @@ export function SimpleForm() {
     e.preventDefault();
     setSubmitAttempted(true);
     const [firstInvalid] = Object.keys(errors);
-    if (firstInvalid) e.currentTarget.elements.namedItem(firstInvalid).focus();
+    if (firstInvalid) {
+      e.currentTarget.elements.namedItem(firstInvalid).focus();
+      return;
+    }
+    // Snapshot of the valid values; later edits do not change it.
+    setSubmitted(values);
   };
 
   const ctx = {
@@ -70,6 +77,7 @@ export function SimpleForm() {
           Submit
         </button>
       </form>
+      {submitted && <ShowData data={submitted} />}
     </FormContext.Provider>
   );
 }

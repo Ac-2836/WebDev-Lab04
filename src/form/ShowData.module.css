@@ -1,0 +1,30 @@
+.inspector {
+  max-width: 32rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #c4c4c4;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.heading {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.375rem 1rem;
+  margin: 0;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+.list dt {
+  font-weight: 600;
+}
+
+.list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
