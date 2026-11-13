@@ -4,6 +4,7 @@ import styles from './RootLayout.module.css';
 const NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
   { to: '/people', label: 'People', end: false },
+  { to: '/form', label: 'Form', end: false },
 ];
 
 export function RootLayout() {

@@ -1,0 +1,49 @@
+.form {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+}
+
+.form h2 {
+  margin: 0;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field input {
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #6b7280;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.field input:focus-visible,
+.submit:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+.status {
+  color: #374151;
+}
+
+.submit {
+  justify-self: start;
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 6px;
+  background: #1d4ed8;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

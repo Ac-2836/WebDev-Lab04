@@ -4,6 +4,7 @@ import { Home, RootLayout } from './layouts/RootLayout.jsx';
 import { PeopleIndex, PeopleLayout } from './people/PeopleLayout.jsx';
 import { PersonSkeleton } from './people/PersonSkeleton.jsx';
 import { PEOPLE } from './people/people-data.js';
+import { SimpleForm } from './form/SimpleForm.jsx';
 
 // Route-level code split; lazy() needs a default export, so map the named one.
 const PersonDetail = lazy(() =>
@@ -26,6 +27,7 @@ export function App() {
             }
           />
         </Route>
+        <Route path='form' element={<SimpleForm />} />
       </Route>
     </Routes>
   );
