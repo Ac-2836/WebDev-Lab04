@@ -8,25 +8,6 @@
   margin: 0;
 }
 
-.field {
-  display: grid;
-  gap: 0.25rem;
-  margin: 0;
-}
-
-.field label {
-  font-weight: 600;
-}
-
-.field input {
-  min-width: 0;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #6b7280;
-  border-radius: 6px;
-  font: inherit;
-}
-
-.field input:focus-visible,
 .submit:focus-visible {
   outline: 3px solid #f59e0b;
   outline-offset: 2px;
