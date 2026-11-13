@@ -1,0 +1,53 @@
+/* Fixed block size shared by the detail, 404 and skeleton states (CLS 0). */
+.panel {
+  height: 16rem;
+  overflow: auto;
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.details dt {
+  font-weight: 600;
+}
+
+.details dd {
+  margin: 0;
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eceff3 25%, #f6f7f9 50%, #eceff3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
