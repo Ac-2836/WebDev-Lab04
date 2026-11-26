@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/form', label: 'Form', end: false },
   { to: '/forums', label: 'Forums', end: false },
   { to: '/gallery', label: 'Gallery', end: false },
+  { to: '/swipe', label: 'Swipe', end: false },
 ];
 
 export function RootLayout() {
