@@ -63,3 +63,31 @@
   Practices stay 100/100/100 on mobile and desktop (LCP 1.7 s / 0.4 s,
   CLS 0, TBT 0 ms). `evidence/lighthouse-hw1/summary.json`,
   `evidence/lighthouse-hw1/lh-gallery-desktop.html`.
+
+## AI Failure 03 (HW 3): SLA timer render test batched every tick into one act()
+
+- **AI Prompt:** Task H3.5: fail test for `useAppealSlaTimer`, including "one
+  state update per displayed second".
+- **AI Generated Code:** `useAppealSlaTimer.test.jsx` (commit `f2a5ec4`)
+  counts renders around a single `act(() => vi.advanceTimersByTime(3000))`.
+  React batches every state update inside one `act()` into one render, so
+  the test sees 1 render whatever the hook does: it cannot tell a hook that
+  re-renders on every 250 ms tick from one that re-renders once per second,
+  and it fails for a correct hook too.
+- **Risk:** The checkpoint that guards against the Lab 03 failure (a timer
+  hook re-rendering many times per second) gives no protection; the red run
+  of H3.5 looked like proof but was red for the wrong reason.
+- **Detection Method / DevTools Proof:** Found while implementing H3.6. The
+  correct hook passes 5/6 tests and fails this one with
+  `AssertionError: expected 1 to be 3`; a probe hook that calls `setState` on
+  every tick fails with exactly the same message. Evidence:
+  `evidence/H3.6-test-before-fix.txt`,
+  `evidence/H3.6-per-tick-probe-before-fix.txt`.
+- **Engineering Refactor / Manual Fix:** The test now runs one `act()` per
+  250 ms tick (12 acts for 3 s), so each tick can commit on its own and the
+  render count reflects what the hook really does.
+- **Verification Evidence:** With the fixed test the per-tick probe fails
+  with `expected 12 to be 3`, so the test now catches the defect; the H3.6
+  hook (state updated only when the shown second changes) passes 6/6.
+  `evidence/H3.6-per-tick-probe-after-fix.txt`,
+  `evidence/H3.6-test-after-fix.txt`.
