@@ -91,3 +91,31 @@
   hook (state updated only when the shown second changes) passes 6/6.
   `evidence/H3.6-per-tick-probe-after-fix.txt`,
   `evidence/H3.6-test-after-fix.txt`.
+
+## HW 3 Post-mortem: architecture analysis
+
+Defects found while building HW 3: one (AI Failure 03). Looking at all Lab 04
+entries together, the root causes are architectural, not typos:
+
+| Entry | Layer | Root cause | Guard now in place |
+|---|---|---|---|
+| 01 | Scaffold | Code copied from an older commit carries its old bugs | Console check (0 errors) is part of every task's verification |
+| 02 (HW 1) | Rendering | A layout-dependent number (`EAGER_COUNT`) chosen without reading the layout | The value is tied to the 1440 px cap and Lighthouse runs on every route |
+| 03 (HW 3) | Tests | The test harness (`act()` batching) hid the behaviour the test claimed to check | A probe that must fail is run against new checks before they are trusted |
+
+HW 3 design decisions that kept the rest of the module free of defects:
+
+- **One rule set for client and server.** `validate-appeal.js` is imported by
+  the form and by the Express route, so the 400 messages are the form's
+  messages and the two cannot drift apart.
+- **Time is never counted, only measured.** `useAppealSlaTimer` recomputes
+  `deadline - (now + serverOffset)` from absolute timestamps; the server
+  sends `serverNow` so a wrong client clock does not move the deadline, and
+  `visibilitychange` resyncs a throttled background tab at once. The server
+  still enforces the deadline (409), so the client timer is a display, not
+  the authority.
+- **Derived data stays derived.** The disproportionality matrix is a pure
+  function of the dossier computed during render; no copy is kept in state.
+- **Requests are scoped to the route.** `useDossier` aborts the previous
+  player's request, so a slow answer for one player can never overwrite
+  another; the appeal form is keyed by player so a draft cannot leak.
