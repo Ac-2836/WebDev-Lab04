@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { DisproportionalityMatrix } from './DisproportionalityMatrix.jsx';
 import { useDossier } from './useDossier.js';
 import styles from './AppealTribunal.module.css';
 
@@ -54,6 +55,7 @@ export function DossierView() {
           </time>
         </dd>
       </dl>
+      <DisproportionalityMatrix dossier={dossier} />
     </article>
   );
 }

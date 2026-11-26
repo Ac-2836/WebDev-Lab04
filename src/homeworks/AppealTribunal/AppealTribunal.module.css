@@ -72,3 +72,46 @@
 .facts dd {
   margin: 0;
 }
+
+/* The table scrolls inside its own region on phones, never the page. */
+.matrixWrap {
+  overflow-x: auto;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.matrix caption {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.matrix th,
+.matrix td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  text-align: left;
+}
+
+.matrix thead th,
+.matrix tfoot th,
+.matrix tfoot td {
+  background: #f3f4f6;
+}
+
+[data-verdict='Disproportionate'] {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+[data-verdict='Elevated'] {
+  color: #92400e;
+  font-weight: 600;
+}
+
+[data-verdict='Proportionate'] {
+  color: #166534;
+}
