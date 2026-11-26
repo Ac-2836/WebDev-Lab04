@@ -1,6 +1,6 @@
 # project-rules.md
 
-My working contract with AI for Lab 04 (In-class sprints now; homework sections are added later in the same repo). The AI must read and follow this file in full before starting any task. Sections 1-4 are my standing way of working with AI (copied from the master rules); section 5 holds the Lab 04 global rules; section 6 holds the rules specific to the In-class sprints.
+My working contract with AI for Lab 04 (In-class sprints and homeworks, one repo). The AI must read and follow this file in full before starting any task. Sections 1-4 are my standing way of working with AI (copied from the master rules); section 5 holds the Lab 04 global rules; section 6 holds the rules specific to the In-class sprints; section 7 holds the rules shared by all homeworks; sections 8-10 hold the rules specific to Homework 1-3.
 
 ---
 
@@ -291,3 +291,157 @@ where the slides give them; the rest come from `TASK_DECOMPOSITION.md`.
 - Checkpoint 3: under Slow 3G, rapid channel switches show the stale requests
   as canceled in the Network panel with no console errors; the full-stack
   error log is saved as evidence.
+
+---
+
+## 7. Homework Common Rules (apply to sections 8-10)
+
+- Same repo as the In-class sprints; the submitted In-class state is frozen
+  at tag `inclass-submission`.
+- The slides number the homeworks inconsistently (slide 19-21 vs the code
+  contracts on slides 30-33). This repo follows the slide order: HW 1 Photo &
+  Evidence Gallery, HW 2 Card-Swipe Deck, HW 3 Fair-Play Appeal Tribunal.
+- Each homework lives in its own folder under `src/homeworks/`
+  (`PhotoGallery/`, `SwipeDeck/`, `AppealTribunal/`) and is mounted as its
+  own route in `App.jsx` with a link in the main nav (`/gallery`, `/swipe`,
+  `/dossier`). Server code for a homework lives in `server/homeworks/` and is
+  mounted on the existing Express app. Homework code never edits In-class
+  components.
+- Commit scope is the homework id (`hw1`, `hw2`, `hw3`). The slides mandate
+  no exact homework commit messages; `TASK_DECOMPOSITION.md` is the source.
+- The only new runtime dependency is `mongoose` (8.x) for HW 2 and HW 3.
+  MongoDB runs locally in Docker (`mongo:8`); its URI comes from
+  `MONGODB_URI` in `.env`, never from source.
+- The contract-first loop of section 5 applies: logic gets a test committed
+  red before the implementation.
+- Every homework logs its own AI defects in `docs/AI_FAILURE_AUDIT.md`,
+  continuing the shared numbering and naming the homework in the title,
+  e.g. `## AI Failure 02 (HW 1): ...`. HW 3 adds the post-mortem analysis the
+  slides require.
+
+---
+
+## 8. HW 1 Rules: Production Multi-Route Photo & Evidence Gallery SPA
+
+### Scope
+
+- Photo gallery with category filters and a lightbox in
+  `src/homeworks/PhotoGallery/`, route `/gallery`.
+- Follow the slide contract; do not change it without my approval:
+
+```js
+const [searchParams, setSearchParams] = useSearchParams();
+const selectedPhotoId = searchParams.get('photoId');
+const dialogRef = useRef(null);
+useEffect(() => {
+  if (selectedPhotoId) dialogRef.current?.showModal();
+  else dialogRef.current?.close();
+}, [selectedPhotoId]);
+<dialog ref={dialogRef} onClose={/* sync back to URL */}>
+```
+
+### Hard constraints
+
+- The URL is the only source of truth: `?category=` filters and `?photoId=`
+  opens the lightbox. Both are deep-linkable and survive reload and
+  back/forward; neither is mirrored into `useState`.
+- Closing the lightbox removes only `photoId` and keeps `category` (the
+  slide's `setSearchParams({})` would also drop the filter). Unknown
+  `photoId` or `category` values never crash: the dialog stays closed and
+  the filter falls back to all photos.
+- Native `<dialog>` opened with `showModal()` (focus trap, Esc, inert page);
+  labelled by the photo title; the close button has an accessible name; on
+  close focus returns to the thumbnail that opened it.
+- Images are local files with explicit `width` / `height` (zero CLS),
+  meaningful `alt`, modern format, and `loading="lazy"` below the fold.
+- WCAG 2.2 AA (contrast >= 4.5:1, visible focus, targets >= 24 px), 375px
+  with zero horizontal scroll. Lighthouse **Performance** and Accessibility
+  100 on the production build, verified and kept as evidence.
+
+---
+
+## 9. HW 2 Rules: Full-Stack Interactive Card-Swipe Deck ('Hẹn Hò Nhưng Không Yêu')
+
+### Scope
+
+- Swipe deck in `src/homeworks/SwipeDeck/`, route `/swipe`, backed by
+  Express + Mongoose 8 in `server/homeworks/swipe/`.
+- Follow the slide contracts; do not change them without my approval:
+
+```js
+// Frontend (slide 31)
+// ArrowLeft -> swipe('left'), ArrowRight -> swipe('right'),
+// ArrowUp -> swipe('up'), Backspace -> undoLastSwipe()
+// pointerdown/pointerup: dx > 50 -> 'right', dx < -50 -> 'left'
+// score = history.reduce(LIKE ? +10 : -5)
+
+// Backend (slide 32)
+if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI missing');
+await mongoose.connect(process.env.MONGODB_URI);
+app.get('/api/profiles', /* Profile.find().lean() */);
+app.post('/api/swipe', /* Swipe.create(...) -> 201, error -> 400 */);
+```
+
+### Hard constraints
+
+- Keyboard handler sits on the focusable deck (`tabIndex={0}`, accessible
+  name), not on `window`, and ignores `e.repeat`. Every gesture also has a
+  visible button (WCAG 2.5.1 single-pointer alternative).
+- Pointer: `setPointerCapture` on down; `pointercancel` resets; a
+  `pointerup` without a recorded start is ignored (the slide code would
+  crash on `startPos.x`).
+- LIFO undo: swipes are pushed onto a history stack immutably; undo pops the
+  last one and puts that card back on top. The remaining deck and the score
+  are derived from `profiles` + `history` during render; zero `useEffect`
+  for them.
+- Asymmetric score: `right` = LIKE +10; `left` and `up` follow the slide's
+  else-branch at -5. The meaning of `up` is fixed in the WBS contract.
+- Server: Mongoose 8 `async`/`await` only, no deprecated connect flags, no
+  callbacks; reads use `.lean()`; the swipe body is whitelisted and checked
+  by the schema (`enum`, `required`), a validation error returns 400. Undo
+  is persisted too (`DELETE /api/swipe/:id`), so the server history matches
+  the client stack.
+- A failed save rolls the local swipe back and is announced with
+  `role="alert"`.
+
+---
+
+## 10. HW 3 Rules: Full-Stack Esports Fair-Play Appeal Tribunal (Himass & TanVuu)
+
+### Scope
+
+- Appeal portal in `src/homeworks/AppealTribunal/`, routes `/dossier` and
+  `/dossier/:playerId`, backed by Express + Mongoose 8 in
+  `server/homeworks/tribunal/`.
+- Follow the slide contracts; do not change them without my approval:
+
+```js
+// Multi-route dossiers (slide 21 / 33)
+<Route path='/dossier/:playerId' element={<DossierView />} />
+// Disproportionality matrix derived from the dossier during render
+const matrix = computeMatrix(dossierData);
+// Zero-drift SLA countdown (slide 21 / 33)
+export function useAppealSlaTimer(deadlineEpochMs, serverOffsetMs = 0);
+// returns { remainingMs, isExpired }
+```
+
+### Hard constraints
+
+- One dynamic route `/dossier/:playerId` serves Himass and TanVuu (the
+  slide's two hard-coded routes are its example data); an unknown id shows a
+  `role="alert"` 404 state.
+- Dossiers are fetched from the API with `AbortController` (the In-class
+  `useForumMessages` pattern); switching players cancels the stale request.
+- The disproportionality matrix is a pure function of the dossier, computed
+  during render. `useMemo` only after profiling shows it is needed.
+- The appeal form reuses the Sprint 2 engine pattern: values in state,
+  errors derived during render, shared through context, `useId` labels,
+  `aria-invalid` / `aria-describedby`. The server validates the same rules
+  (400 on failure) and stores the appeal in MongoDB.
+- Zero-drift SLA timer: remaining time is always
+  `Math.max(0, deadlineEpochMs - (Date.now() + serverOffsetMs))`, recomputed
+  on every tick and immediately on `visibilitychange` to visible; state only
+  changes when the displayed second changes. `setInterval((s) => s - 1)`
+  counters are banned. Interval and listener removed in cleanup.
+- `docs/AI_FAILURE_AUDIT.md` gains the HW 3 post-mortem: every verified HW 3
+  defect with its root cause in the architecture.
