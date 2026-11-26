@@ -70,7 +70,9 @@ describe('useAppealSlaTimer', () => {
       return useAppealSlaTimer(NOW + 60 * SECOND);
     });
     const before = renders;
-    act(() => vi.advanceTimersByTime(3 * SECOND));
+    // One act() per 250 ms tick: a single act() would batch every update
+    // into one render and hide per-tick re-renders.
+    for (let i = 0; i < 12; i++) act(() => vi.advanceTimersByTime(250));
     expect(renders - before).toBe(3);
   });
 
