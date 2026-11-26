@@ -9,6 +9,11 @@ import { ForumChannels, ForumIndex } from './forum/ForumChannels.jsx';
 import { ForumMessages } from './forum/ForumMessages.jsx';
 import { PhotoGallery } from './homeworks/PhotoGallery/PhotoGallery.jsx';
 import { SwipeDeck } from './homeworks/SwipeDeck/SwipeDeck.jsx';
+import {
+  DossierIndex,
+  DossierLayout,
+} from './homeworks/AppealTribunal/DossierLayout.jsx';
+import { DossierView } from './homeworks/AppealTribunal/DossierView.jsx';
 
 // Route-level code split; lazy() needs a default export, so map the named one.
 const PersonDetail = lazy(() =>
@@ -38,6 +43,10 @@ export function App() {
         </Route>
         <Route path='gallery' element={<PhotoGallery />} />
         <Route path='swipe' element={<SwipeDeck />} />
+        <Route path='dossier' element={<DossierLayout />}>
+          <Route index element={<DossierIndex />} />
+          <Route path=':playerId' element={<DossierView />} />
+        </Route>
       </Route>
     </Routes>
   );
