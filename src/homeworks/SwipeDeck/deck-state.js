@@ -14,10 +14,25 @@ export function historyReducer(history, action) {
     }
     case 'undo':
       return history.length ? history.slice(0, -1) : history;
+    // Server round-trip results (H2.7).
+    case 'saved':
+      return history.map((s) =>
+        s.profileId === action.profileId
+          ? { ...s, swipeId: action.swipeId }
+          : s
+      );
+    case 'rollback':
+      return history.filter((s) => s.profileId !== action.profileId);
+    case 'restore':
+      return [...history, action.entry];
     default:
       return history;
   }
 }
+
+// Undo waits until every swipe has its server id, so it can be deleted.
+export const canUndo = (history) =>
+  history.length > 0 && history.every((s) => s.swipeId);
 
 export function remainingDeck(profiles, history) {
   const swiped = new Set(history.map((s) => s.profileId));

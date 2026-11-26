@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { historyReducer, remainingDeck, scoreOf } from './deck-state.js';
+import {
+  canUndo,
+  historyReducer,
+  remainingDeck,
+  scoreOf,
+} from './deck-state.js';
 
 // Contract:
 //   historyReducer(history, action) -> history (LIFO stack, never mutated)
@@ -80,5 +85,43 @@ describe('derived deck and score', () => {
     expect(
       scoreOf(run([swipe('a', 'right'), swipe('b', 'left'), swipe('c', 'up')]))
     ).toBe(0);
+  });
+});
+
+describe('server round-trip actions', () => {
+  const pending = run([swipe('a', 'right'), swipe('b', 'left')]);
+
+  it('saved attaches the server id; undo is allowed once all are saved', () => {
+    expect(canUndo(pending)).toBe(false);
+    const one = historyReducer(pending, {
+      type: 'saved',
+      profileId: 'a',
+      swipeId: 's1',
+    });
+    expect(one[0]).toEqual({
+      profileId: 'a',
+      direction: 'right',
+      swipeId: 's1',
+    });
+    expect(canUndo(one)).toBe(false);
+    const both = historyReducer(one, {
+      type: 'saved',
+      profileId: 'b',
+      swipeId: 's2',
+    });
+    expect(canUndo(both)).toBe(true);
+  });
+
+  it('rollback removes a failed swipe so its card returns', () => {
+    const next = historyReducer(pending, { type: 'rollback', profileId: 'a' });
+    expect(next).toEqual([{ profileId: 'b', direction: 'left' }]);
+    expect(remainingDeck(PROFILES, next)[0]._id).toBe('a');
+  });
+
+  it('restore pushes an entry back on top after a failed undo', () => {
+    const entry = { profileId: 'c', direction: 'up', swipeId: 's3' };
+    expect(historyReducer(pending, { type: 'restore', entry }).at(-1)).toBe(
+      entry
+    );
   });
 });

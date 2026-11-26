@@ -1,11 +1,12 @@
 import { useEffect, useReducer, useState } from 'react';
 import {
+  canUndo,
   DIRECTIONS,
   historyReducer,
   remainingDeck,
   scoreOf,
 } from './deck-state.js';
-import { fetchProfiles } from './swipe-api.js';
+import { deleteSwipe, fetchProfiles, saveSwipe } from './swipe-api.js';
 import { useSwipeGestures } from './useSwipeGestures.js';
 import styles from './SwipeDeck.module.css';
 
@@ -40,10 +41,34 @@ export function SwipeDeck() {
   const last = history.at(-1);
   const lastName = profiles.find((p) => p._id === last?.profileId)?.name;
 
+  const [saveError, setSaveError] = useState(null);
+
+  // Optimistic: the card leaves at once; a failed save puts it back.
   const swipe = (direction) => {
-    if (top) dispatch({ type: 'swipe', profileId: top._id, direction });
+    if (!top) return;
+    const profileId = top._id;
+    setSaveError(null);
+    dispatch({ type: 'swipe', profileId, direction });
+    saveSwipe({ profileId, direction })
+      .then((saved) =>
+        dispatch({ type: 'saved', profileId, swipeId: saved._id })
+      )
+      .catch((err) => {
+        dispatch({ type: 'rollback', profileId });
+        setSaveError(`Swipe on ${top.name} was not saved: ${err.message}`);
+      });
   };
-  const undo = () => dispatch({ type: 'undo' });
+
+  const undo = () => {
+    if (!canUndo(history)) return;
+    const entry = history.at(-1);
+    setSaveError(null);
+    dispatch({ type: 'undo' });
+    deleteSwipe(entry.swipeId).catch((err) => {
+      dispatch({ type: 'restore', entry });
+      setSaveError(`Undo was not saved: ${err.message}`);
+    });
+  };
   const { drag, handlers } = useSwipeGestures({ onSwipe: swipe, onUndo: undo });
 
   return (
@@ -106,12 +131,17 @@ export function SwipeDeck() {
             <button
               type='button'
               className={styles.undo}
-              disabled={history.length === 0}
+              disabled={!canUndo(history)}
               onClick={undo}
             >
               Undo
             </button>
           </p>
+          {saveError && (
+            <p className={styles.error} role='alert'>
+              {saveError}
+            </p>
+          )}
           <p className={styles.last} aria-live='polite'>
             {last && `${DIRECTIONS[last.direction].label}: ${lastName}`}
           </p>
