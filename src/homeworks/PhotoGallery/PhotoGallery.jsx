@@ -1,5 +1,11 @@
 import { Link, useSearchParams } from 'react-router';
-import { readGallery, withCategory } from './gallery-params.js';
+import {
+  readGallery,
+  withCategory,
+  withoutPhoto,
+  withPhoto,
+} from './gallery-params.js';
+import { Lightbox } from './Lightbox.jsx';
 import { CATEGORIES, PHOTOS } from './photos.js';
 import styles from './PhotoGallery.module.css';
 
@@ -8,8 +14,14 @@ const EAGER_COUNT = 4;
 const FILTERS = [{ id: 'all', label: 'All' }, ...CATEGORIES];
 
 export function PhotoGallery() {
-  const [searchParams] = useSearchParams();
-  const { category, photos } = readGallery(searchParams, PHOTOS);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { category, photos, selected } = readGallery(searchParams, PHOTOS);
+
+  // Fires for Esc, the close button and URL-driven close(); only the first
+  // two still have photoId in the URL.
+  const handleClose = () => {
+    if (selected) setSearchParams(withoutPhoto(searchParams));
+  };
 
   return (
     <section className={styles.gallery} aria-labelledby='gallery-heading'>
@@ -35,7 +47,11 @@ export function PhotoGallery() {
       <ul className={styles.grid}>
         {photos.map((p, i) => (
           <li key={p.id}>
-            <button type='button' className={styles.thumb}>
+            <button
+              type='button'
+              className={styles.thumb}
+              onClick={() => setSearchParams(withPhoto(searchParams, p.id))}
+            >
               <img
                 src={p.thumb}
                 alt={p.alt}
@@ -48,6 +64,7 @@ export function PhotoGallery() {
           </li>
         ))}
       </ul>
+      <Lightbox photo={selected} onClose={handleClose} />
     </section>
   );
 }
