@@ -9,8 +9,9 @@ import { Lightbox } from './Lightbox.jsx';
 import { CATEGORIES, PHOTOS } from './photos.js';
 import styles from './PhotoGallery.module.css';
 
-// Thumbnails above the fold load eagerly; the rest wait for scroll.
-const EAGER_COUNT = 4;
+// main is capped at 1440px, so the grid never shows more than 6 thumbnails
+// in its first row: those load eagerly, the rest wait for scroll.
+const EAGER_COUNT = 6;
 const FILTERS = [{ id: 'all', label: 'All' }, ...CATEGORIES];
 
 export function PhotoGallery() {
@@ -58,6 +59,7 @@ export function PhotoGallery() {
                 width={480}
                 height={300}
                 loading={i < EAGER_COUNT ? 'eager' : 'lazy'}
+                fetchPriority={i === 0 ? 'high' : undefined}
                 decoding='async'
               />
               <span className={styles.caption}>{p.title}</span>
