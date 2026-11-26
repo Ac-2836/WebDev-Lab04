@@ -58,6 +58,7 @@ export function PhotoGallery() {
                 width={480}
                 height={300}
                 loading={i < EAGER_COUNT ? 'eager' : 'lazy'}
+                decoding='async'
               />
               <span className={styles.caption}>{p.title}</span>
             </button>
