@@ -115,3 +115,29 @@
 [data-verdict='Proportionate'] {
   color: #166534;
 }
+
+.appeal {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.appeal h3 {
+  margin: 0;
+}
+
+.sla {
+  margin: 0;
+}
+
+.sla time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.closed {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 600;
+}

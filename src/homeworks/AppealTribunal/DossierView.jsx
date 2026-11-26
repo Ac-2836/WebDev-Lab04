@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { AppealSection } from './AppealSection.jsx';
 import { DisproportionalityMatrix } from './DisproportionalityMatrix.jsx';
 import { useDossier } from './useDossier.js';
 import styles from './AppealTribunal.module.css';
@@ -37,7 +38,7 @@ export function DossierView() {
     );
   }
 
-  const { dossier } = state;
+  const { dossier, serverOffsetMs } = state;
   return (
     <article className={styles.dossier} aria-labelledby='dossier-heading'>
       <h3 id='dossier-heading'>Case file: {dossier.playerName}</h3>
@@ -56,6 +57,7 @@ export function DossierView() {
         </dd>
       </dl>
       <DisproportionalityMatrix dossier={dossier} />
+      <AppealSection dossier={dossier} serverOffsetMs={serverOffsetMs} />
     </article>
   );
 }
