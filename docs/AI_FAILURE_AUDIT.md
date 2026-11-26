@@ -32,3 +32,34 @@
   no `favicon` entry in `performance.getEntriesByType('resource')`;
   `npm run build` passes. `evidence/0.1-console-after-fix.txt` (captured log,
   not a DevTools panel screenshot).
+
+## AI Failure 02 (HW 1): LCP thumbnail is lazy-loaded on desktop
+
+- **AI Prompt:** Task H1.1 / H1.5: thumbnail grid with lazy images below the
+  fold, CLS 0, Lighthouse Performance 100.
+- **AI Generated Code:** `PhotoGallery.jsx` (commit `62feb0d`, kept in
+  `349938c`) loads only the first 4 thumbnails eagerly (`EAGER_COUNT = 4`)
+  and marks the rest `loading="lazy"`. The number was picked without looking
+  at the layout: at 1350-1440 px the `minmax(220px, 1fr)` grid shows 6
+  thumbnails in the first row, so thumbnails 5 and 6 are above the fold but
+  lazy, and the browser picks one of them as the Largest Contentful Paint.
+- **Risk:** The LCP image waits for layout before it is requested, which
+  delays LCP on slower connections; Lighthouse flags it even though the
+  local score stays 100, so the "every finding fixed" rule of H1.6 fails.
+- **Detection Method / DevTools Proof:** Found during Task H1.6. Lighthouse
+  12.8 desktop preset on the production build (`/gallery`): audit
+  "Largest Contentful Paint image was lazily loaded" score 0; the LCP
+  element is `<img ... loading="lazy" src="/gallery/form-live-status-thumb.webp">`
+  (5th thumbnail). Same result on `/gallery?category=forms&photoId=...`.
+  Evidence: `evidence/H1.6-before-fix/lh-gallery-desktop.html`,
+  `evidence/H1.6-before-fix/lcp-lazy-loaded.txt`.
+- **Engineering Refactor / Manual Fix:** `EAGER_COUNT` is now 6, tied to
+  the layout: `main` is capped at 1440 px, so the grid never shows more than
+  6 thumbnails in its first row at any width; the first thumbnail also gets
+  `fetchPriority="high"`. Thumbnails 7-11 stay lazy.
+- **Verification Evidence:** Rebuilt and re-ran Lighthouse 3 times per preset
+  on `/gallery` and the lightbox deep link: "Largest Contentful Paint image
+  was lazily loaded" passes on desktop; Performance, Accessibility and Best
+  Practices stay 100/100/100 on mobile and desktop (LCP 1.7 s / 0.4 s,
+  CLS 0, TBT 0 ms). `evidence/lighthouse-hw1/summary.json`,
+  `evidence/lighthouse-hw1/lh-gallery-desktop.html`.
