@@ -6,6 +6,7 @@ import {
   scoreOf,
 } from './deck-state.js';
 import { fetchProfiles } from './swipe-api.js';
+import { useSwipeGestures } from './useSwipeGestures.js';
 import styles from './SwipeDeck.module.css';
 
 function useProfiles() {
@@ -43,6 +44,7 @@ export function SwipeDeck() {
     if (top) dispatch({ type: 'swipe', profileId: top._id, direction });
   };
   const undo = () => dispatch({ type: 'undo' });
+  const { drag, handlers } = useSwipeGestures({ onSwipe: swipe, onUndo: undo });
 
   return (
     <section className={styles.swipe} aria-labelledby='swipe-heading'>
@@ -61,16 +63,34 @@ export function SwipeDeck() {
       )}
       {status === 'SUCCESS' && (
         <>
-          {top ? (
-            <article className={styles.card} aria-labelledby='card-name'>
-              <h3 id='card-name'>
-                {top.name}, {top.age}
-              </h3>
-              <p>{top.bio}</p>
-            </article>
-          ) : (
-            <p className={styles.empty}>No more profiles. Undo to go back.</p>
-          )}
+          <article
+            className={styles.card}
+            aria-labelledby='card-name'
+            aria-describedby='card-help'
+            aria-keyshortcuts='ArrowLeft ArrowUp ArrowRight Backspace'
+            tabIndex={0}
+            style={{
+              transform: `translate(${drag.dx}px, ${drag.dy}px) rotate(${
+                drag.dx / 20
+              }deg)`,
+            }}
+            {...handlers}
+          >
+            {top ? (
+              <>
+                <h3 id='card-name'>
+                  {top.name}, {top.age}
+                </h3>
+                <p>{top.bio}</p>
+              </>
+            ) : (
+              <h3 id='card-name'>No more profiles. Undo to go back.</h3>
+            )}
+          </article>
+          <p id='card-help' className={styles.help}>
+            Drag the card or use Arrow Left (Nope), Arrow Up (Hẹn hò nhưng
+            không yêu), Arrow Right (Like) and Backspace (Undo).
+          </p>
           <p className={styles.actions}>
             {Object.entries(DIRECTIONS).map(([direction, meta]) => (
               <button
