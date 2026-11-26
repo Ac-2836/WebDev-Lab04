@@ -32,3 +32,33 @@ each. Reports and screenshots stay in the git-ignored `evidence/` folder.
 | Deep link | `?category=full-stack&photoId=forum-api-down` opens the dialog on load and after reload; `?photoId=nope` keeps it closed |
 | Layout | 375 px: one column, no horizontal scroll; 1440 px: 6 columns; CLS 0 on load and scroll; filter targets 38 px high; focus ring 3 px `#f59e0b` |
 | Console | 0 errors, 0 warnings |
+
+## HW 2: Card-Swipe Deck (Task H2.8)
+
+### Lighthouse (Performance / Accessibility / Best Practices)
+
+| Page | Mobile (3 runs) | Desktop (3 runs) | Mobile LCP / CLS / TBT | Desktop LCP / CLS / TBT |
+|---|---|---|---|---|
+| `/swipe` (API + MongoDB running) | 100/100/100 x3 | 100/100/100 x3 | 1.7 s / 0 / 0 ms | 0.4 s / 0 / 0 ms |
+
+### API (curl against the running server, MongoDB 8 in Docker)
+
+| Request | Result |
+|---|---|
+| `GET /api/profiles` | 200, 8 seeded profiles in deck order (`.lean()`, no `__v`) |
+| `POST /api/swipe` with an extra `score` field | 201 `{ profileId, direction, _id, createdAt }`; `score` dropped |
+| `POST /api/swipe` with `direction: 'down'` | 400, Mongoose enum validation message |
+| `DELETE /api/swipe/:id` twice | 204, then 404 |
+| `GET /api/messages/nasa` | 200 (In-class route still works after mounting the HW router) |
+
+### Deck behaviour (Playwright on Chrome)
+
+| Check | Result |
+|---|---|
+| Buttons | Like +10, Nope -5, 'Hẹn hò nhưng không yêu' -5; 1 React commit per click; two Undos restore the cards in LIFO order |
+| Keyboard on the focused card | ArrowRight / ArrowLeft / ArrowUp swipe, Backspace undoes; a held key (5 `repeat` events) swipes once; arrows outside the card do nothing; the page does not scroll |
+| Pointer | 80 px right drag -> Like, 90 px up -> 'up', 30 px drag -> nothing; the card follows the pointer while dragging; a stray `pointerup` without `pointerdown` does nothing (no error) |
+| Persistence | POST 201 per swipe, DELETE 204 per undo; MongoDB holds exactly the swipes left on the client stack; Undo stays disabled until the pending save returns |
+| Failures | POST 500 -> card comes back, `role="alert"` "Swipe on Bình was not saved"; DELETE 500 -> undone card goes back on the stack, `role="alert"` "Undo was not saved" |
+| Layout | 375 px no horizontal scroll, buttons 44 px high; focus ring on the card |
+| Console | 0 app errors (only Chrome's network lines for the forced 500 responses) |
