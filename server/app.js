@@ -5,7 +5,11 @@ import { createStore } from './db.js';
 
 const isFilled = (value) => typeof value === 'string' && value.trim() !== '';
 
-export function createApp({ clientOrigin, store = createStore() }) {
+export function createApp({
+  clientOrigin,
+  store = createStore(),
+  routers = [],
+}) {
   const app = express();
   app.use(cors({ origin: clientOrigin }));
   app.use(express.json());
@@ -35,6 +39,9 @@ export function createApp({ clientOrigin, store = createStore() }) {
     await store.addMessage(forum, message);
     return res.status(201).json(message);
   });
+
+  // Homework routers (HW 2, HW 3) share CORS, JSON parsing and errors.
+  routers.forEach((router) => app.use(router));
 
   // Malformed JSON and unexpected errors still answer with JSON.
   app.use((err, req, res, next) => {
