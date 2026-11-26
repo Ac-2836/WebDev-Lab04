@@ -1,3 +1,4 @@
+import { AppealForm } from './AppealForm.jsx';
 import { useAppealSlaTimer } from './useAppealSlaTimer.js';
 import styles from './AppealTribunal.module.css';
 
@@ -37,6 +38,11 @@ export function AppealSection({ dossier, serverOffsetMs }) {
           </time>
         </p>
       )}
+      <AppealForm
+        key={dossier._id}
+        playerId={dossier._id}
+        closed={isExpired}
+      />
     </section>
   );
 }
